@@ -1,0 +1,368 @@
+"use client"
+
+import React, { useState } from 'react'
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Search from './Search';
+import { CgProfile } from 'react-icons/cg';
+import { MdNotificationsActive } from 'react-icons/md';
+import { VscThreeBars } from 'react-icons/vsc';
+
+const Navbar = () => {
+    const [showPopup, setShowPopup] = useState(false);
+    const [showNotif, setShowNotif] = useState(false);
+    const [notifClosing, setNotifClosing] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
+    const pathname = usePathname();
+
+    const handleNotifClose = () => {
+        setNotifClosing(true);
+        setTimeout(() => {
+            setShowNotif(false);
+            setNotifClosing(false);
+        }, 250); // match animation duration
+    };
+
+    return (
+        <div className="relative">
+            <header className="flex flex-row flex-1 items-center justify-end pt-0.5 mt-0.5 w-full min-h-[40px]">
+                <div className="flex flex-row flex-1 items-center justify-between">
+                    <Link href="/" className="flex items-center">
+                        <img className="h-[40px]" src="logo.png" alt="logo image" />
+                    </Link>
+                    <div className='w-full p-0'>
+                        <Search />
+                    </div>
+                    {/* Hamburger for md and below */}
+                    <button className="block md:hidden ml-2 text-2xl" onClick={() => setShowMobileMenu(!showMobileMenu)} aria-label="Open menu">
+                        <VscThreeBars className="cursor-pointer hover:text-gray-400" />
+                    </button>
+                </div>
+                {/* Desktop menu (hidden on md and below) */}
+                <div className="hidden md:flex flex-row flex-1 items-center justify-around max-w-[30vw] text-xl font-light">
+                    <ul className="flex items-center px-2 mb-0 mt-0 list-none">
+                        <li>
+                            <Link href="/advertise">
+                                <span className={`font-bold align-middle text-base px-2 py-5 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertise</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/blog">
+                                <span className={`font-bold align-middle text-base px-2 py-5 transition-colors ${pathname === '/blog' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Blog</span>
+                            </Link>
+                        </li>
+                    </ul>
+                    <div className="relative" onMouseEnter={() => setShowPopup(true)} onMouseLeave={() => setShowPopup(false)}>
+                        <button className="bg-white text-gray-400 px-2 py-1 rounded cursor-not-allowed border border-black hover:border-gray-400 hover:text-black hover:bg-gray-700 transition-colors">Submit Photo</button>
+                        {showPopup && (
+                            <div className="absolute left-1/2 -translate-x-1/2 mt-2 px-4 py-2 bg-black text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                Photo Submission Currently Not Allowed
+                            </div>
+                        )}
+                    </div>
+                    <MdNotificationsActive className="cursor-pointer hover:text-gray-400" onClick={() => setShowNotif(true)} />
+                    <CgProfile className="cursor-pointer hover:text-gray-400" />
+                    <VscThreeBars className="cursor-pointer hover:text-gray-400" />
+                </div>
+                {/* Mobile dropdown menu */}
+                {showMobileMenu && (
+                    <div className="md:hidden absolute right-2 top-[60px] z-50 w-56 bg-white rounded-lg shadow-xl border border-gray-200">
+                        <ul className="flex flex-col py-2">
+                            <li>
+                                <Link href="/advertise" onClick={() => setShowMobileMenu(false)}>
+                                    <span className={`block font-bold align-middle text-base px-4 py-2 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertise</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/blog" onClick={() => setShowMobileMenu(false)}>
+                                    <span className={`block font-bold align-middle text-base px-4 py-2 transition-colors ${pathname === '/blog' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Blog</span>
+                                </Link>
+                            </li>
+                            <li className="relative group">
+                                <button className="w-full text-left bg-white text-gray-400 px-4 py-2 rounded cursor-not-allowed border border-black hover:border-gray-400 hover:text-black hover:bg-gray-700 transition-colors" onMouseEnter={() => setShowPopup(true)} onMouseLeave={() => setShowPopup(false)}>
+                                    Submit a Photo
+                                </button>
+                                {showPopup && (
+                                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-4 py-2 bg-black text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                        Photo Submission Currently Not Allowed
+                                    </div>
+                                )}
+                            </li>
+                            <li>
+                                <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black" onClick={() => { setShowNotif(true); setShowMobileMenu(false); }}>
+                                    <MdNotificationsActive className="mr-2" /> Notifications
+                                </button>
+                            </li>
+                            <li>
+                                <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black">
+                                    <CgProfile className="mr-2" /> Profile
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                )}
+            </header>
+            {/* Notification Sidebar/Popup */}
+            {/* Large screens: sidebar, medium and below: popup */}
+            {showNotif && (
+                <>
+                    <div className="fixed inset-0 z-40 bg-opacity-10 backdrop-blur-md" style={{ backdropFilter: 'blur(12px) saturate(160%)' }} onClick={handleNotifClose}></div>
+                    {/* Sidebar for large screens */}
+                    <div className={`lg:flex hidden fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 flex-col ${notifClosing ? 'animate-slideOut' : 'animate-slideIn'}`}>
+                        <div className="flex justify-between items-center p-4 border-b">
+                            <span className="font-bold text-lg">Notifications</span>
+                            <button onClick={handleNotifClose} className="text-xl">&times;</button>
+                        </div>
+                        <div className="flex-1 p-4">No notifications yet.</div>
+                    </div>
+                    {/* Popup for medium and smaller screens */}
+                    <div className={`flex lg:hidden fixed inset-0 z-50 items-center justify-center`}>
+                        <div className={`bg-white rounded-lg shadow-2xl p-6 w-11/12 max-w-sm relative`}>
+                            <div className="font-bold text-lg mb-2">Notifications</div>
+                            <div>No notifications yet.</div>
+                        </div>
+                    </div>
+                    <style jsx global>{`
+                  @keyframes slideIn {
+                    from { transform: translateX(100%); }
+                    to { transform: translateX(0); }
+                  }
+                  @keyframes slideOut {
+                    from { transform: translateX(0); }
+                    to { transform: translateX(100%); }
+                  }
+                  .animate-slideIn {
+                    animation: slideIn 0.3s cubic-bezier(0.4,0,0.2,1);
+                  }
+                  .animate-slideOut {
+                    animation: slideOut 0.25s cubic-bezier(0.4,0,0.2,1);
+                  }
+                  @keyframes popIn {
+                    from { transform: scale(0.8); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                  }
+                  @keyframes popOut {
+                    from { transform: scale(1); opacity: 1; }
+                    to { transform: scale(0.8); opacity: 0; }
+                  }
+                `}</style>
+                </>
+            )}
+        </div>
+    )
+}
+
+export default Navbar;
+
+
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// "use client"
+
+// import React, { useState } from 'react'
+// import Link from 'next/link';
+// import { CgProfile } from 'react-icons/cg';
+// import { MdNotificationsActive } from 'react-icons/md';
+// import { VscThreeBars } from 'react-icons/vsc';
+// import Search from './Search';
+// import { usePathname } from 'next/navigation';
+
+// const Navbar = () => {
+//     const [showPopup, setShowPopup] = useState(false);
+//     const [showNotif, setShowNotif] = useState(false);
+//     const [notifClosing, setNotifClosing] = useState(false);
+//     const [showMobileMenu, setShowMobileMenu] = useState(false);
+//     const [showLargeDropdown, setShowLargeDropdown] = useState(false);
+//     const pathname = usePathname();
+
+//     const handleNotifClose = () => {
+//         setNotifClosing(true);
+//         setTimeout(() => {
+//             setShowNotif(false);
+//             setNotifClosing(false);
+//         }, 250); // match animation duration
+//     };
+
+//     return (
+//         <div className="relative">
+//             <header className="flex flex-row flex-1 items-center justify-end pt-0.5 mt-0.5 w-full min-h-[40px]">
+//                 <div className="flex flex-row flex-1 items-center justify-between">
+//                     <Link href="/" className="flex items-center">
+//                         <img className="h-[40px]" src="logo.png" alt="logo image" />
+//                     </Link>
+//                     <div className='w-full p-0'>
+//                         <Search />
+//                     </div>
+//                     {/* Hamburger for md and below */}
+//                     <button className="hidden md:block ml-2 text-2xl" onClick={() => setShowMobileMenu(!showMobileMenu)} aria-label="Open menu">
+//                         <VscThreeBars className="cursor-pointer hover:text-gray-400" />
+//                     </button>
+//                 </div>
+//                 {/* Desktop menu (hidden on lg and below) */}
+//                 <div className="hidden lg:flex flex-row flex-1 items-center justify-around max-w-[30vw] text-xl font-light">
+//                     <ul className="flex items-center px-2 mb-0 mt-0 list-none">
+//                         <li>
+//                             <Link href="/advertise">
+//                                 <span className={`font-bold align-middle text-base px-2 py-5 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertise</span>
+//                             </Link>
+//                         </li>
+//                         <li>
+//                             <Link href="/blog">
+//                                 <span className={`font-bold align-middle text-base px-2 py-5 transition-colors ${pathname === '/blog' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Blog</span>
+//                             </Link>
+//                         </li>
+//                     </ul>
+//                     <div className="relative" onMouseEnter={() => setShowPopup(true)} onMouseLeave={() => setShowPopup(false)}>
+//                         <button className="bg-white text-gray-400 px-2 py-1 rounded cursor-not-allowed border border-black hover:border-gray-400 hover:text-black hover:bg-gray-700 transition-colors">Submit Photo</button>
+//                         {showPopup && (
+//                             <div className="absolute left-1/2 -translate-x-1/2 mt-2 px-4 py-2 bg-black text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+//                                 Photo Submission Currently Not Allowed
+//                             </div>
+//                         )}
+//                     </div>
+//                     <MdNotificationsActive className="cursor-pointer hover:text-gray-400" onClick={() => setShowNotif(true)} />
+//                     <CgProfile className="cursor-pointer hover:text-gray-400" />
+//                     <VscThreeBars className="cursor-pointer hover:text-gray-400" />
+//                 </div>
+//                 {/* Drop-down only for large screens */}
+//                 <div className='lg:hidden flex flex-col justify-between right-2 top-[60px] z-50 w-auto'>
+//                     <ul className="flex items-center px-2 mb-0 mt-0 list-none">
+//                         <li>
+//                             <Link href="/advertise">
+//                                 <span className={`font-bold align-middle text-base px-2 py-5 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertiseeeeee</span>
+//                             </Link>
+//                         </li>
+//                         <li>
+//                             <Link href="/blog">
+//                                 <span className={`font-bold align-middle text-base px-2 py-5 transition-colors ${pathname === '/blog' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Blog</span>
+//                             </Link>
+//                         </li>
+//                         <li>
+//                             <button className="block lg:hidden ml-2 text-2xl" onClick={() => setShowLargeDropdown(!showLargeDropdown)} aria-label="Open menu">
+//                                 <VscThreeBars className="cursor-pointer hover:text-gray-400" />
+//                             </button>
+//                         </li>
+//                     </ul>
+
+//                     {showLargeDropdown && (
+//                         <div className='lg:hidden absolute right-2 top-[60px] z-50 w-56 bg-white rounded-lg shadow-xl border border-gray-200'>
+//                             <ul className="flex flex-col py-2">
+//                                 <li className="relative group">
+//                                     <button className="w-full text-left bg-white text-gray-400 px-4 py-2 rounded cursor-not-allowed border border-black hover:border-gray-400 hover:text-black hover:bg-gray-700 transition-colors" onMouseEnter={() => setShowPopup(true)} onMouseLeave={() => setShowPopup(false)}>
+//                                         Submit a Photo
+//                                     </button>
+//                                     {showPopup && (
+//                                         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-4 py-2 bg-black text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+//                                             Photo Submission Currently Not Allowed
+//                                         </div>
+//                                     )}
+//                                 </li>
+//                                 <li>
+//                                     <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black" onClick={() => { setShowNotif(true); setShowMobileMenu(false); }}>
+//                                         <MdNotificationsActive className="mr-2" /> Notifications
+//                                     </button>
+//                                 </li>
+//                                 <li>
+//                                     <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black">
+//                                         <CgProfile className="mr-2" /> Profile
+//                                     </button>
+//                                 </li>
+//                             </ul>
+//                         </div>
+//                     )
+//                     }
+//                 </div>
+//                 {/* Mobile dropdown menu */}
+//                 {
+//                     showMobileMenu && (
+//                         <div className="md:hidden absolute right-2 top-[60px] z-50 w-56 bg-white rounded-lg shadow-xl border border-gray-200">
+//                             <ul className="flex flex-col py-2">
+//                                 <li>
+//                                     <Link href="/advertise" onClick={() => setShowMobileMenu(false)}>
+//                                         <span className={`block font-bold align-middle text-base px-4 py-2 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertise</span>
+//                                     </Link>
+//                                 </li>
+//                                 <li>
+//                                     <Link href="/blog" onClick={() => setShowMobileMenu(false)}>
+//                                         <span className={`block font-bold align-middle text-base px-4 py-2 transition-colors ${pathname === '/blog' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Blog</span>
+//                                     </Link>
+//                                 </li>
+//                                 <li className="relative group">
+//                                     <button className="w-full text-left bg-white text-gray-400 px-4 py-2 rounded cursor-not-allowed border border-black hover:border-gray-400 hover:text-black hover:bg-gray-700 transition-colors" onMouseEnter={() => setShowPopup(true)} onMouseLeave={() => setShowPopup(false)}>
+//                                         Submit a Photo
+//                                     </button>
+//                                     {showPopup && (
+//                                         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-4 py-2 bg-black text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+//                                             Photo Submission Currently Not Allowed
+//                                         </div>
+//                                     )}
+//                                 </li>
+//                                 <li>
+//                                     <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black" onClick={() => { setShowNotif(true); setShowMobileMenu(false); }}>
+//                                         <MdNotificationsActive className="mr-2" /> Notifications
+//                                     </button>
+//                                 </li>
+//                                 <li>
+//                                     <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black">
+//                                         <CgProfile className="mr-2" /> Profile
+//                                     </button>
+//                                 </li>
+//                             </ul>
+//                         </div>
+//                     )
+//                 }
+//             </header >
+//             {/* Notification Sidebar/Popup */}
+//             {/* Large screens: sidebar, medium and below: popup */}
+//             {
+//                 showNotif && (
+//                     <>
+//                         <div className="fixed inset-0 z-40 bg-opacity-10 backdrop-blur-md" style={{ backdropFilter: 'blur(12px) saturate(160%)' }} onClick={handleNotifClose}></div>
+//                         {/* Sidebar for large screens */}
+//                         <div className={`lg:flex hidden fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 flex-col ${notifClosing ? 'animate-slideOut' : 'animate-slideIn'}`}>
+//                             <div className="flex justify-between items-center p-4 border-b">
+//                                 <span className="font-bold text-lg">Notifications</span>
+//                                 <button onClick={handleNotifClose} className="text-xl">&times;</button>
+//                             </div>
+//                             <div className="flex-1 p-4">No notifications yet.</div>
+//                         </div>
+//                         {/* Popup for medium and smaller screens */}
+//                         <div className={`flex lg:hidden fixed inset-0 z-50 items-center justify-center`}>
+//                             <div className={`bg-white rounded-lg shadow-2xl p-6 w-11/12 max-w-sm relative`}>
+//                                 <div className="font-bold text-lg mb-2">Notifications</div>
+//                                 <div>No notifications yet.</div>
+//                             </div>
+//                         </div>
+//                         <style jsx global>{`
+//                   @keyframes slideIn {
+//                     from { transform: translateX(100%); }
+//                     to { transform: translateX(0); }
+//                   }
+//                   @keyframes slideOut {
+//                     from { transform: translateX(0); }
+//                     to { transform: translateX(100%); }
+//                   }
+//                   .animate-slideIn {
+//                     animation: slideIn 0.3s cubic-bezier(0.4,0,0.2,1);
+//                   }
+//                   .animate-slideOut {
+//                     animation: slideOut 0.25s cubic-bezier(0.4,0,0.2,1);
+//                   }
+//                   @keyframes popIn {
+//                     from { transform: scale(0.8); opacity: 0; }
+//                     to { transform: scale(1); opacity: 1; }
+//                   }
+//                   @keyframes popOut {
+//                     from { transform: scale(1); opacity: 1; }
+//                     to { transform: scale(0.8); opacity: 0; }
+//                   }
+//                 `}</style>
+//                     </>
+//                 )
+//             }
+//         </div >
+//     )
+// }
+
+// export default Navbar;
