@@ -48,8 +48,8 @@ const SecoundaryBar = () => {
                   })}
                 </ul>
             </div>
-            <RiMore2Line className="ml-10 text-white text-2xl" />
-            <div className="flex-1 ml-6">
+            <RiMore2Line className="ml-9 mr-5 text-white text-2xl" />
+            <div className="flex-1 ml-5">
                 <ul className="flex items-center justify-around flex-wrap gap-4">
                   {genres.map((cat) => {
                     const link = getCategoryPath(cat);
