@@ -14,6 +14,3 @@ const CategoryPage = async ({ params }) => {
 };
 
 export default CategoryPage;
-
-// https://source.unsplash.com/random/520x600/?travel,adventure,nature,car
-// https://picsum.photos/520/600/
