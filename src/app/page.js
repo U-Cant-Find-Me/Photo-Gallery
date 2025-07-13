@@ -1,3 +1,5 @@
+import CenterPage from "@/components/CenterPage";
+import RenderImages from "@/components/RenderImages";
 import SecoundaryBar from "@/components/SecoundaryBar";
 
 const bgurl = 'https://random-image-pepebigotes.vercel.app/api/random-image';
@@ -8,6 +10,10 @@ export default function Home() {
       style={{ backgroundImage: `url(${bgurl})` }}
     >
       <SecoundaryBar />
+      <CenterPage />
+      <div className="bg-white">
+        <RenderImages />
+      </div>
     </div>
   );
 }

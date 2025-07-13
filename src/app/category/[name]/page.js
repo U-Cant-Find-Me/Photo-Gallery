@@ -10,7 +10,7 @@ const CategoryPage = async ({ params }) => {
         <h1 className="text-3xl font-bold text-gray-800">{decodeURIComponent(name)}</h1>
       </div>
     </>
-  );z
+  );
 };
 
 export default CategoryPage;
