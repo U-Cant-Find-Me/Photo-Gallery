@@ -53,7 +53,7 @@ export default function PexelsAPI() {
             if (loader.current) observer.unobserve(loader.current);
         };
     }, []);
-
+    // console.log("call pexels api");
     return (
         <>
             {pexelsData.map((data) => (

@@ -1,5 +1,6 @@
 "use client";
 
+import LazyImage from '@/components/LazyImage';
 import axios from 'axios';
 import Image from 'next/image';
 import React, { useEffect, useState, useRef } from 'react'
@@ -48,6 +49,7 @@ const PicsumAPI = () => {
                 picsumData.map((data) => (
                     <li className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto" key={data.id}>
                         <Image src={data.download_url} alt={data.author} width={420} height={450} className="w-full h-[450px] object-cover transition-transform duration-300 group-hover:scale-105" style={{ minWidth: '380px' }} />
+                        {/* <LazyImage src={data.download_url} alt={data.author} width={420} height={450}/> */}
                         {
                             data.author &&
                             <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center p-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -63,6 +65,3 @@ const PicsumAPI = () => {
 }
 
 export default PicsumAPI;
-
-
-
