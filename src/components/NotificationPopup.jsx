@@ -1,5 +1,3 @@
-import React from 'react';
-
 const NotificationPopup = ({ open, onClose }) => {
     if (!open) return null;
     return (

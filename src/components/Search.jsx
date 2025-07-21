@@ -1,4 +1,3 @@
-import React from 'react'
 import { ImSearch } from 'react-icons/im'
 import { SiGooglelens } from 'react-icons/si';
 

@@ -1,15 +1,8 @@
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
-// import Navbar from '../../Navbar'
+import ErrorBoundary from '@/components/ErrorHandling/ErrorBoundary'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,17 +24,10 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {/* <header className="flex justify-end items-center p-4 gap-4 h-16">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header> */}
+          <ErrorBoundary>
           <Navbar />
           {children}
+          </ErrorBoundary>
         </body>
       </html>
     </ClerkProvider>

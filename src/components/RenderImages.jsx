@@ -1,18 +1,77 @@
-import React from 'react'
-import PicsumAPI from '@/backend/api/PicsumAPI';
-import PixabayAPI from '@/backend/api/PixabayAPI';
+"use client";
+
+import { useState, useEffect } from 'react'
 import UnsplashAPI from '@/backend/api/UnsplashAPI';
+import PixabayAPI from '@/backend/api/PixabayAPI';
+import PicsumAPI from '@/backend/api/PicsumAPI';
 import PexelsAPI from '@/backend/api/PexelsAPI';
+import useProgressiveLoading from './useProgressiveLoading';
 
 const RenderImages = () => {
+    const totalComponents = 4;
+    
+    const {
+        loadedComponents,
+        componentProgress,
+        isLoading,
+        setComponentRef,
+        getLoadingStatus,
+        manuallyLoadNext,
+        config
+    } = useProgressiveLoading(totalComponents);
+
+    const status = getLoadingStatus();
+
+    const renderComponent = (index) => {
+        if (!loadedComponents.includes(index)) {
+            return (
+                <li 
+                    key={`placeholder-${index}`}
+                    className="flex items-center justify-center h-64 bg-gray-100 rounded-xl border-2 border-dashed border-gray-300"
+                >
+                    <div className="text-center">
+                        {config.PERFORMANCE.SHOW_LOADING_ANIMATIONS && (
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
+                        )}
+                        <p className="text-gray-500">Loading...</p>
+                        {isLoading && index === Math.max(...loadedComponents) + 1 && (
+                            <p className="text-xs text-gray-400 mt-1">Preparing to load...</p>
+                        )}
+                        {/* Manual load button for testing */}
+                        <button 
+                            onClick={() => manuallyLoadNext()}
+                            className="mt-2 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+                        >
+                            Load Now
+                        </button>
+                    </div>
+                </li>
+            );
+        }
+
+        const components = [
+            <UnsplashAPI key="unsplash" />,
+            <PixabayAPI key="pixabay" />,
+            <PicsumAPI key="picsum" />,
+            <PexelsAPI key="pexels" />
+        ];
+
+        return (
+            <div 
+                key={`component-${index}`}
+                ref={el => setComponentRef(index, el)}
+                className="contents"
+            >
+                {components[index]}
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen py-10 px-4 flex flex-col items-center">
             <h1 className="text-4xl font-bold text-gray-400 mb-8 drop-shadow-lg">Popular Images</h1>
             <ul className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-                <UnsplashAPI />
-                {/* <PixabayAPI /> */}
-                {/* <PicsumAPI /> */}
-                {/* <PexelsAPI /> */}
+                {Array.from({ length: totalComponents }, (_, index) => renderComponent(index))}
             </ul>
         </div>
     )

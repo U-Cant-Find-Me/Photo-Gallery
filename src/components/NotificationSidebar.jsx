@@ -1,5 +1,3 @@
-import React from 'react';
-
 const NotificationSidebar = ({ open, onClose, notifClosing }) => {
     if (!open) return null;
     return (

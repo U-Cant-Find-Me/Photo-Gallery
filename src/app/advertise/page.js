@@ -1,6 +1,4 @@
-import React from 'react'
-
-const page = () => {
+const AdvertisePage = () => {
     return (
         <div className='flex flex-col items-center justify-center min-h-screen p-4'>
             <h3>This is advertise page</h3>
@@ -9,4 +7,4 @@ const page = () => {
     )
 }
 
-export default page
+export default AdvertisePage;

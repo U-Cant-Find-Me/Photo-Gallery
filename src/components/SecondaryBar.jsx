@@ -1,11 +1,10 @@
 "use client";
 
-import React from 'react';
 import MainLinks from './MainLinks';
 import GenresBar from './GenresBar';
 import { RiMore2Line } from 'react-icons/ri';
 
-const SecoundaryBar = () => {
+const SecondaryBar = () => {
   return (
     <>
       <section className="mt-1 flex items-center bg-black w-full">
@@ -27,4 +26,4 @@ const SecoundaryBar = () => {
   )
 }
 
-export default SecoundaryBar;
+export default SecondaryBar;
