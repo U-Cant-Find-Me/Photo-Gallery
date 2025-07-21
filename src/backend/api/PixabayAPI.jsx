@@ -8,22 +8,22 @@ import useErrorHandler from '@/hooks/useErrorHandler';
 
 const pixabay_api_key = process.env.NEXT_PUBLIC_API_PIXABAY;
 
-const searchPhotos = async (page) => {
+const searchPhotos = async (page, category) => {
     if (!pixabay_api_key) {
         throw new Error('Pixabay API key is not configured');
     }
-
-    const pixabay_enpoint_url = `https://pixabay.com/api/?key=${pixabay_api_key}&image_type=photo&page=${page || 1}&per_page=20`;
-    const res = await axios.get(pixabay_enpoint_url);
-    
+    let url = `https://pixabay.com/api/?key=${pixabay_api_key}&image_type=photo&page=${page || 1}&per_page=20`;
+    if (category) {
+        url += `&q=${encodeURIComponent(category)}`;
+    }
+    const res = await axios.get(url);
     if (!res.data || !res.data.hits) {
         throw new Error('Invalid response format from Pixabay API');
     }
-    
     return res.data.hits;
 };
 
-const PixabayAPI = () => {
+const PixabayAPI = ({ category }) => {
     const [pixabayData, setPixabayData] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -33,7 +33,7 @@ const PixabayAPI = () => {
     const loadPhotos = async () => {
         try {
             setLoading(true);
-            const newPhotos = await searchPhotos(page);
+            const newPhotos = await searchPhotos(page, category);
             
             if (newPhotos.length === 0) {
                 setHasMore(false);
@@ -48,8 +48,14 @@ const PixabayAPI = () => {
     };
 
     useEffect(() => {
+        setPixabayData([]);
+        setPage(1);
+        setHasMore(true);
+    }, [category]);
+
+    useEffect(() => {
         loadPhotos();
-    }, [page]);
+    }, [page, category]);
 
     // Lazy load when last element is in view
     useEffect(() => {

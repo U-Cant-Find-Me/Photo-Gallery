@@ -41,10 +41,10 @@ const searchPhotos = async (query, page) => {
     }
 };
 
-export default function PexelsAPI() {
+export default function PexelsAPI({ category }) {
     const [pexelsData, setPexelsData] = useState([]);
     const [page, setPage] = useState(1);
-    const [query, setQuery] = useState('nature');
+    const [query, setQuery] = useState(category || 'nature');
     const [hasMore, setHasMore] = useState(true);
     const loader = useRef(null);
     const { error, isLoading, handleError, retry, setLoading } = useErrorHandler();
@@ -67,8 +67,15 @@ export default function PexelsAPI() {
     };
 
     useEffect(() => {
+        setQuery(category || 'nature');
+        setPexelsData([]);
+        setPage(1);
+        setHasMore(true);
+    }, [category]);
+
+    useEffect(() => {
         loadPhotos();
-    }, [page]);
+    }, [page, query]);
 
     // Lazy load when last element is in view
     useEffect(() => {

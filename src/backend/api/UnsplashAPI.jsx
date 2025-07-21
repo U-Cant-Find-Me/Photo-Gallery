@@ -9,7 +9,7 @@ import useErrorHandler from '@/hooks/useErrorHandler';
 const unsplash_api_key = process.env.NEXT_PUBLIC_API_UNSPLASH;
 const unsplash_enpoint_url = `https://api.unsplash.com/photos/random?client_id=${unsplash_api_key}&count=30`;
 
-const UnsplashAPI = () => {
+const UnsplashAPI = ({ category }) => {
     const [unsplashData, setUnsplashData] = useState([]);
     const { error, isLoading, handleError, retry, setLoading } = useErrorHandler();
 
@@ -17,16 +17,22 @@ const UnsplashAPI = () => {
         if (!unsplash_api_key) {
             throw new Error('Unsplash API key is not configured');
         }
-
         setLoading(true);
         try {
-            const response = await axios.get(unsplash_enpoint_url);
-            
-            if (!response.data || !Array.isArray(response.data)) {
-                throw new Error('Invalid response format from Unsplash API');
+            let response;
+            if (category) {
+                response = await axios.get(`https://api.unsplash.com/search/photos?client_id=${unsplash_api_key}&query=${encodeURIComponent(category)}&per_page=30`);
+                if (!response.data || !Array.isArray(response.data.results)) {
+                    throw new Error('Invalid response format from Unsplash API');
+                }
+                setUnsplashData(response.data.results);
+            } else {
+                response = await axios.get(unsplash_enpoint_url);
+                if (!response.data || !Array.isArray(response.data)) {
+                    throw new Error('Invalid response format from Unsplash API');
+                }
+                setUnsplashData(response.data);
             }
-            
-            setUnsplashData(response.data);
             setLoading(false);
         } catch (error) {
             handleError(error, 'Unsplash API');
@@ -35,7 +41,7 @@ const UnsplashAPI = () => {
 
     useEffect(() => {
         fetchUnsplashData();
-    }, []);
+    }, [category]);
 
     // Show error state
     if (error) {

@@ -25,7 +25,7 @@ const searchPhotos = async (page) => {
     }
 }
 
-const PicsumAPI = () => {
+const PicsumAPI = ({ category }) => {
     const [picsumData, setPicsumData] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -36,22 +36,32 @@ const PicsumAPI = () => {
         try {
             setLoading(true);
             const newPhotos = await searchPhotos(page);
-            
-            if (newPhotos.length === 0) {
+            let filteredPhotos = newPhotos;
+            if (category) {
+                const cat = category.toLowerCase();
+                filteredPhotos = newPhotos.filter(photo =>
+                    (photo.author && photo.author.toLowerCase().includes(cat)) ||
+                    (photo.id && String(photo.id).toLowerCase().includes(cat))
+                );
+            }
+            if (filteredPhotos.length === 0) {
                 setHasMore(false);
             } else {
-                setPicsumData(prev => [...prev, ...newPhotos]);
+                setPicsumData(prev => [...prev, ...filteredPhotos]);
             }
-            
             setLoading(false);
         } catch (error) {
             handleError(error, 'Picsum API');
         }
     };
-
+    useEffect(() => {
+        setPicsumData([]);
+        setPage(1);
+        setHasMore(true);
+    }, [category]);
     useEffect(() => {
         loadPhotos();
-    }, [page]);
+    }, [page, category]);
 
     // Lazy load when last element is in view
     useEffect(() => {
