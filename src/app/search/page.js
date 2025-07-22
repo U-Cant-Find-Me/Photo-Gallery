@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import LazyImage from '@/components/LazyImage';
 import ErrorMessage from '@/components/ErrorHandling/ErrorMessage';
 import axios from 'axios';
+import SecondaryBar from '@/components/SecondaryBar';
 
 const fetchPexels = async (query, page = 1) => {
     const apiKey = process.env.NEXT_PUBLIC_API_PEXELS;
@@ -121,11 +122,15 @@ export default function SearchResultsPage() {
     }
 
     return (
-        <div className="min-h-screen py-10 px-4 flex flex-col items-center">
-            <h1 className="text-3xl font-bold text-gray-700 mb-8">Search Results for "{query}"</h1>
-            <div className="w-full max-w-6xl">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex flex-col items-center">
+            {/* Sticky search bar */}
+            <SecondaryBar />
+            <div className="sticky top-0 z-20 w-full bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm py-4 px-4 flex flex-col items-center">
+                <h1 className="text-4xl font-bold text-gray-400 mb-2 drop-shadow-lg">Search Results for "{query}"</h1>
+            </div>
+            <div className="w-full max-w-6xl px-2 md:px-0 mt-8">
                 {apiList.map(api => (
-                    <div key={api.name} className="mb-12">
+                    <div key={api.name} className="mb-16">
                         {results[api.name]?.error ? (
                             <ErrorMessage title={`Error from ${api.name}`} message={results[api.name].error} />
                         ) : (
@@ -147,7 +152,7 @@ export default function SearchResultsPage() {
                                         alt = img.author || 'Picsum image';
                                     }
                                     return (
-                                        <li key={src + idx} className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto">
+                                        <li key={src + idx} className="relative group overflow-hidden rounded-2xl shadow-xl border border-gray-200 bg-white w-full max-w-[420px] mx-auto transition-transform duration-200 hover:scale-[1.025] hover:shadow-2xl">
                                             <LazyImage
                                                 src={src}
                                                 alt={alt}
@@ -158,7 +163,7 @@ export default function SearchResultsPage() {
                                                 priority={idx < 3}
                                             />
                                             {alt && (
-                                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center p-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-center p-3 text-base font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                     {alt}
                                                 </div>
                                             )}
@@ -170,8 +175,20 @@ export default function SearchResultsPage() {
                     </div>
                 ))}
                 {/* Loader for infinite scroll */}
-                <div ref={loaderRef} className="h-10 w-full text-center text-gray-500">{Object.values(hasMore).some(Boolean) ? 'Loading more...' : 'No more results.'}</div>
+                <div ref={loaderRef} className="h-16 w-full flex items-center justify-center">
+                    {Object.values(hasMore).some(Boolean) ? (
+                        <div className="flex items-center gap-2 text-gray-500 animate-pulse">
+                            <span className="inline-block w-4 h-4 rounded-full bg-blue-400" />
+                            <span className="font-medium">Loading more...</span>
+                        </div>
+                    ) : (
+                        <span className="text-gray-400 font-medium">No more results.</span>
+                    )}
+                </div>
             </div>
+            <style jsx global>{`
+                body { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%); }
+            `}</style>
         </div>
     );
 }

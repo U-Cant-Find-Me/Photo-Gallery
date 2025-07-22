@@ -1,7 +1,7 @@
 "use client";
 
 import axios from 'axios';
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import LazyImage from '@/components/LazyImage';
 import ErrorMessage from '@/components/ErrorHandling/ErrorMessage';
 import useErrorHandler from '@/hooks/useErrorHandler';
@@ -11,9 +11,12 @@ const unsplash_enpoint_url = `https://api.unsplash.com/photos/random?client_id=$
 
 const UnsplashAPI = ({ category }) => {
     const [unsplashData, setUnsplashData] = useState([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const loader = useRef(null);
     const { error, isLoading, handleError, retry, setLoading } = useErrorHandler();
 
-    const fetchUnsplashData = async () => {
+    const fetchUnsplashData = async (pageToFetch = 1, reset = false) => {
         if (!unsplash_api_key) {
             throw new Error('Unsplash API key is not configured');
         }
@@ -21,17 +24,23 @@ const UnsplashAPI = ({ category }) => {
         try {
             let response;
             if (category) {
-                response = await axios.get(`https://api.unsplash.com/search/photos?client_id=${unsplash_api_key}&query=${encodeURIComponent(category)}&per_page=30`);
+                response = await axios.get(`https://api.unsplash.com/search/photos?client_id=${unsplash_api_key}&query=${encodeURIComponent(category)}&per_page=20&page=${pageToFetch}`);
                 if (!response.data || !Array.isArray(response.data.results)) {
                     throw new Error('Invalid response format from Unsplash API');
                 }
-                setUnsplashData(response.data.results);
+                if (reset) {
+                    setUnsplashData(response.data.results);
+                } else {
+                    setUnsplashData(prev => [...prev, ...response.data.results]);
+                }
+                setHasMore(response.data.results.length > 0 && response.data.total_pages > pageToFetch);
             } else {
                 response = await axios.get(unsplash_enpoint_url);
                 if (!response.data || !Array.isArray(response.data)) {
                     throw new Error('Invalid response format from Unsplash API');
                 }
                 setUnsplashData(response.data);
+                setHasMore(false);
             }
             setLoading(false);
         } catch (error) {
@@ -39,9 +48,46 @@ const UnsplashAPI = ({ category }) => {
         }
     };
 
+    // Reset data when category changes
     useEffect(() => {
-        fetchUnsplashData();
+        setUnsplashData([]);
+        setPage(1);
+        setHasMore(true);
+        if (category) {
+            fetchUnsplashData(1, true);
+        } else {
+            fetchUnsplashData();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [category]);
+
+    // Fetch more data when page changes (for infinite scroll)
+    useEffect(() => {
+        if (page === 1) return; // already loaded in category effect
+        if (category) {
+            fetchUnsplashData(page);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page]);
+
+    // Infinite scroll observer
+    useEffect(() => {
+        if (!category) return;
+        const observer = new window.IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && hasMore && !isLoading) {
+                    setPage(prev => prev + 1);
+                }
+            },
+            { threshold: 1 }
+        );
+        if (loader.current) {
+            observer.observe(loader.current);
+        }
+        return () => {
+            if (loader.current) observer.unobserve(loader.current);
+        };
+    }, [hasMore, isLoading, category]);
 
     // Show error state
     if (error) {
@@ -115,6 +161,21 @@ const UnsplashAPI = ({ category }) => {
                     }
                 </li>
             ))}
+            {/* Loading more indicator */}
+            {category && hasMore && (
+                <div ref={loader} className="w-full max-w-[420px] mx-auto">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-20 bg-gray-100 rounded-xl">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600 mx-auto mb-2"></div>
+                                <p className="text-gray-500 text-sm">Loading more...</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="h-10 w-full text-center text-gray-500" />
+                    )}
+                </div>
+            )}
         </>
     )
 }
