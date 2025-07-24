@@ -1,6 +1,7 @@
 'use client';
 // import { use } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import SecondaryBar from '@/components/SecondaryBar';
 import UnsplashAPI from '@/backend/api/UnsplashAPI';
 import PixabayAPI from '@/backend/api/PixabayAPI';
@@ -8,7 +9,7 @@ import PicsumAPI from '@/backend/api/PicsumAPI';
 import PexelsAPI from '@/backend/api/PexelsAPI';
 import useProgressiveLoading from '@/components/useProgressiveLoading';
 
-const CategoryPage = ({ params }) => {
+const CategoryPageContent = ({ params }) => {
   const searchParams = useSearchParams();
   // const { name } = use(params);
   const { name } = params;
@@ -79,6 +80,25 @@ const CategoryPage = ({ params }) => {
         </ul>
       </div>
     </>
+  );
+};
+
+const CategoryPage = ({ params }) => {
+  return (
+    <Suspense fallback={
+      <>
+        <SecondaryBar />
+        <div className="min-h-screen py-10 px-4 flex flex-col items-center">
+          <h1 className="text-4xl font-bold text-gray-400 mb-8 drop-shadow-lg">Loading Category...</h1>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading images...</p>
+          </div>
+        </div>
+      </>
+    }>
+      <CategoryPageContent params={params} />
+    </Suspense>
   );
 };
 

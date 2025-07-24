@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { ImSearch } from 'react-icons/im'
 import { SiGooglelens } from 'react-icons/si';
 
@@ -15,7 +15,7 @@ const debounce = (func, delay) => {
     };
 };
 
-const Search = () => {
+const SearchComponent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const inputRef = useRef();
@@ -58,5 +58,24 @@ const Search = () => {
         </div>
     )
 }
+
+const Search = () => {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-row flex-1 items-center justify-around pl-4 pr-4 border border-gray-700 rounded-full bg-gray-100 h-full min-h-[40px]">
+                <ImSearch className="text-lg" />
+                <input
+                    className="bg-gray-100 text-red-500 w-full h-full pl-2 text-base border-none focus:outline-none"
+                    type="text"
+                    placeholder='Search...'
+                    disabled
+                />
+                <SiGooglelens className="text-lg" />
+            </div>
+        }>
+            <SearchComponent />
+        </Suspense>
+    );
+};
 
 export default Search;

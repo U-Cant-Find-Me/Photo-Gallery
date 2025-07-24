@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LazyImage from '@/components/LazyImage';
 import ErrorMessage from '@/components/ErrorHandling/ErrorMessage';
@@ -41,7 +41,7 @@ const apiList = [
     { name: 'Pexels', fetcher: fetchPexels },
 ];
 
-export default function SearchResultsPage() {
+function SearchResultsContent() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q') || '';
     const [results, setResults] = useState({});
@@ -191,5 +191,24 @@ export default function SearchResultsPage() {
                 body { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%); }
             `}</style>
         </div>
+    );
+}
+
+export default function SearchResultsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex flex-col items-center">
+                <SecondaryBar />
+                <div className="sticky top-0 z-20 w-full bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm py-4 px-4 flex flex-col items-center">
+                    <h1 className="text-4xl font-bold text-gray-400 mb-2 drop-shadow-lg">Loading Search Results...</h1>
+                </div>
+                <div className="p-8 text-center text-gray-500">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+                    Loading...
+                </div>
+            </div>
+        }>
+            <SearchResultsContent />
+        </Suspense>
     );
 }
