@@ -107,9 +107,10 @@ export default function SearchResultsPage() {
                 });
             }
         }, { threshold: 1 });
-        if (loaderRef.current) observer.observe(loaderRef.current);
+        const current = loaderRef.current;
+        if (current) observer.observe(current);
         return () => {
-            if (loaderRef.current) observer.unobserve(loaderRef.current);
+            if (current) observer.unobserve(current);
         };
     }, [query, pages, hasMore, loading]);
 
@@ -126,7 +127,7 @@ export default function SearchResultsPage() {
             {/* Sticky search bar */}
             <SecondaryBar />
             <div className="sticky top-0 z-20 w-full bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm py-4 px-4 flex flex-col items-center">
-                <h1 className="text-4xl font-bold text-gray-400 mb-2 drop-shadow-lg">Search Results for "{query}"</h1>
+                <h1 className="text-4xl font-bold text-gray-400 mb-2 drop-shadow-lg">Search Results for &quot;{query}&quot;</h1>
             </div>
             <div className="w-full max-w-6xl px-2 md:px-0 mt-8">
                 {apiList.map(api => (
