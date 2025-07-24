@@ -1,5 +1,5 @@
 'use client';
-import { use } from 'react';
+// import { use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SecondaryBar from '@/components/SecondaryBar';
 import UnsplashAPI from '@/backend/api/UnsplashAPI';
@@ -10,7 +10,8 @@ import useProgressiveLoading from '@/components/useProgressiveLoading';
 
 const CategoryPage = ({ params }) => {
   const searchParams = useSearchParams();
-  const { name } = use(params);
+  // const { name } = use(params);
+  const { name } = params;
   const q = searchParams.get('q') || name;
   const totalComponents = 4;
 
