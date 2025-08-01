@@ -1,6 +1,7 @@
 "use client";
 
 import axios from 'axios';
+import { AiFillHeart } from 'react-icons/ai';
 import { useEffect, useState, useRef } from 'react'
 import LazyImage from '@/components/LazyImage';
 import ErrorMessage from '@/components/ErrorHandling/ErrorMessage';
@@ -9,7 +10,7 @@ import useErrorHandler from '@/hooks/useErrorHandler';
 const unsplash_api_key = process.env.NEXT_PUBLIC_API_UNSPLASH;
 const unsplash_enpoint_url = `https://api.unsplash.com/photos/random?client_id=${unsplash_api_key}&count=30`;
 
-const UnsplashAPI = ({ category }) => {
+const UnsplashAPI = ({ category, onImageClick }) => {
     const [unsplashData, setUnsplashData] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -143,7 +144,11 @@ const UnsplashAPI = ({ category }) => {
     return (
         <>
             {unsplashData.map((data, index) => (
-                <li className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto" key={`unsplash-${data.id}-${index}`}>
+                <li 
+                    className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
+                    key={`unsplash-${data.id}-${index}`}
+                    onClick={() => onImageClick && onImageClick(data.urls?.regular, data.alt_description || data.description || 'Unsplash image')}
+                >
                     <LazyImage 
                         src={data.urls?.regular} 
                         alt={data.alt_description || data.description || 'Unsplash image'} 
@@ -153,12 +158,20 @@ const UnsplashAPI = ({ category }) => {
                         style={{ minWidth: '380px' }}
                         priority={index < 3}
                     />
-                    {
-                        data.alt_description &&
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center p-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            {data.alt_description}
-                        </div>
-                    }
+                    {/* Like button at top right, no background */}
+                    <button className="absolute top-2 right-2 flex items-center gap-1 text-white z-10 hover:cursor-pointer">
+                        <AiFillHeart className="w-6 h-6 drop-shadow" />
+                        <span className="text-base font-semibold drop-shadow">{data.likes ?? 0}</span>
+                    </button>
+                    {/* Collection button remains at bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded shadow hover:bg-blue-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.75v14.5m7.25-7.25H4.75" />
+                            </svg>
+                            <span>Add to Collection</span>
+                        </button>
+                    </div>
                 </li>
             ))}
             {/* Loading more indicator */}

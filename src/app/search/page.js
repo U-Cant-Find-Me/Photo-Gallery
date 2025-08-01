@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, Suspense } from 'react';
+import ImageModal from '@/components/ImageModal';
+import ImageGridSkeleton from '@/components/ImageGridSkeleton';
 import { useSearchParams } from 'next/navigation';
 import LazyImage from '@/components/LazyImage';
 import ErrorMessage from '@/components/ErrorHandling/ErrorMessage';
@@ -42,6 +44,12 @@ const apiList = [
 ];
 
 function SearchResultsContent() {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalImg, setModalImg] = useState({ url: '', alt: '' });
+    const handleImageClick = (url, alt) => {
+        setModalImg({ url, alt });
+        setModalOpen(true);
+    };
     const searchParams = useSearchParams();
     const query = searchParams.get('q') || '';
     const [results, setResults] = useState({});
@@ -119,7 +127,7 @@ function SearchResultsContent() {
     }
 
     if (loading) {
-        return <div className="p-8 text-center text-gray-500">Loading results...</div>;
+        return <ImageGridSkeleton count={9} />;
     }
 
     return (
@@ -153,7 +161,11 @@ function SearchResultsContent() {
                                         alt = img.author || 'Picsum image';
                                     }
                                     return (
-                                        <li key={src + idx} className="relative group overflow-hidden rounded-2xl shadow-xl border border-gray-200 bg-white w-full max-w-[420px] mx-auto transition-transform duration-200 hover:scale-[1.025] hover:shadow-2xl">
+                                        <li
+                                            key={src + idx}
+                                            className="relative group overflow-hidden rounded-2xl shadow-xl border border-gray-200 bg-white w-full max-w-[420px] mx-auto transition-transform duration-200 hover:scale-[1.025] hover:shadow-2xl cursor-pointer"
+                                            onClick={() => handleImageClick(src, alt)}
+                                        >
                                             <LazyImage
                                                 src={src}
                                                 alt={alt}
@@ -163,11 +175,31 @@ function SearchResultsContent() {
                                                 style={{ minWidth: '380px' }}
                                                 priority={idx < 3}
                                             />
-                                            {alt && (
+                                            {/* Like button at top right, no background */}
+                                            <button className="absolute top-2 right-2 flex items-center gap-1 text-white z-10">
+                                                {/* Heart icon SVG */}
+                                                <svg className="w-6 h-6 drop-shadow" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" /></svg>
+                                                <span className="text-base font-semibold drop-shadow">{
+                                                    api.name === 'Unsplash' ? (img.likes ?? 0) :
+                                                        api.name === 'Pixabay' ? (img.likes ?? 0) :
+                                                            api.name === 'Pexels' ? (img.likes ?? 0) :
+                                                                api.name === 'Picsum' ? (img.likes ?? 0) : 0
+                                                }</span>
+                                            </button>
+                                            {/* Collection button at bottom center, visible on hover */}
+                                            <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <button className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded shadow hover:bg-blue-700">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.75v14.5m7.25-7.25H4.75" />
+                                                    </svg>
+                                                    <span>Add to Collection</span>
+                                                </button>
+                                            </div>
+                                            {/* {alt && (
                                                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-center p-3 text-base font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                     {alt}
                                                 </div>
-                                            )}
+                                            )} */}
                                         </li>
                                     );
                                 })}
@@ -187,6 +219,7 @@ function SearchResultsContent() {
                     )}
                 </div>
             </div>
+            <ImageModal isOpen={modalOpen} onClose={() => setModalOpen(false)} imageUrl={modalImg.url} alt={modalImg.alt} />
             <style jsx global>{`
                 body { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%); }
             `}</style>

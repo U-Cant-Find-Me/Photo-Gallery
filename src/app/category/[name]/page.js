@@ -1,18 +1,21 @@
 'use client';
 // import { use } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, use as usePromise, useState } from 'react';
+import ImageGridSkeleton from '@/components/ImageGridSkeleton';
 import SecondaryBar from '@/components/SecondaryBar';
 import UnsplashAPI from '@/backend/api/UnsplashAPI';
 import PixabayAPI from '@/backend/api/PixabayAPI';
 import PicsumAPI from '@/backend/api/PicsumAPI';
 import PexelsAPI from '@/backend/api/PexelsAPI';
 import useProgressiveLoading from '@/components/useProgressiveLoading';
+import ImageModal from '@/components/ImageModal';
 
 const CategoryPageContent = ({ params }) => {
   const searchParams = useSearchParams();
-  // const { name } = use(params);
-  const { name } = params;
+  // Unwrap params if it's a promise (Next.js 14+)
+  const unwrappedParams = typeof params?.then === 'function' ? usePromise(params) : params;
+  const { name } = unwrappedParams;
   const q = searchParams.get('q') || name;
   const totalComponents = 4;
 
@@ -26,10 +29,18 @@ const CategoryPageContent = ({ params }) => {
     config
   } = useProgressiveLoading(totalComponents);
 
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImg, setModalImg] = useState({ url: '', alt: '' });
+  const handleImageClick = (url, alt) => {
+    setModalImg({ url, alt });
+    setModalOpen(true);
+  };
+
   const renderComponent = (index) => {
     if (!loadedComponents.includes(index)) {
       return (
-        <li 
+        <li
           key={`placeholder-${index}`}
           className="flex items-center justify-center h-64 bg-gray-100 rounded-xl border-2 border-dashed border-gray-300"
         >
@@ -41,7 +52,7 @@ const CategoryPageContent = ({ params }) => {
             {isLoading && index === Math.max(...loadedComponents) + 1 && (
               <p className="text-xs text-gray-400 mt-1">Preparing to load...</p>
             )}
-            <button 
+            <button
               onClick={() => manuallyLoadNext()}
               className="mt-2 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
             >
@@ -53,14 +64,14 @@ const CategoryPageContent = ({ params }) => {
     }
 
     const components = [
-      <UnsplashAPI key="unsplash" category={q} />, // pass category as prop
-      <PixabayAPI key="pixabay" category={q} />,  // pass category as prop
-      <PicsumAPI key="picsum" category={q} />,    // pass category as prop
-      <PexelsAPI key="pexels" category={q} />     // pass category as prop
+      <UnsplashAPI key="unsplash" category={q} onImageClick={handleImageClick} />,
+      <PixabayAPI key="pixabay" category={q} onImageClick={handleImageClick} />,
+      <PicsumAPI key="picsum" category={q} onImageClick={handleImageClick} />,
+      <PexelsAPI key="pexels" category={q} onImageClick={handleImageClick} />
     ];
 
     return (
-      <div 
+      <div
         key={`component-${index}`}
         ref={el => setComponentRef(index, el)}
         className="contents"
@@ -78,6 +89,8 @@ const CategoryPageContent = ({ params }) => {
         <ul className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
           {Array.from({ length: totalComponents }, (_, index) => renderComponent(index))}
         </ul>
+        {/* Modal for image preview */}
+        <ImageModal isOpen={modalOpen} onClose={() => setModalOpen(false)} imageUrl={modalImg.url} alt={modalImg.alt} />
       </div>
     </>
   );

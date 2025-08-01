@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, useEffect } from 'react'
+
 import UnsplashAPI from '@/backend/api/UnsplashAPI';
 import PixabayAPI from '@/backend/api/PixabayAPI';
 import PicsumAPI from '@/backend/api/PicsumAPI';
 import PexelsAPI from '@/backend/api/PexelsAPI';
 import useProgressiveLoading from './useProgressiveLoading';
+import ImageModal from './ImageModal';
+import { useState } from 'react';
 
 const RenderImages = () => {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalImg, setModalImg] = useState({ url: '', alt: '' });
+    const handleImageClick = (url, alt) => {
+        setModalImg({ url, alt });
+        setModalOpen(true);
+    };
     const totalComponents = 4;
     
     const {
@@ -49,11 +57,12 @@ const RenderImages = () => {
             );
         }
 
+        // Pass the click handler to each API component via props
         const components = [
-            <UnsplashAPI key="unsplash" />,
-            <PixabayAPI key="pixabay" />,
-            <PicsumAPI key="picsum" />,
-            <PexelsAPI key="pexels" />
+            <UnsplashAPI key="unsplash" onImageClick={handleImageClick} />,
+            <PixabayAPI key="pixabay" onImageClick={handleImageClick} />,
+            <PicsumAPI key="picsum" onImageClick={handleImageClick} />,
+            <PexelsAPI key="pexels" onImageClick={handleImageClick} />
         ];
 
         return (
@@ -73,6 +82,7 @@ const RenderImages = () => {
             <ul className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
                 {Array.from({ length: totalComponents }, (_, index) => renderComponent(index))}
             </ul>
+            <ImageModal isOpen={modalOpen} onClose={() => setModalOpen(false)} imageUrl={modalImg.url} alt={modalImg.alt} />
         </div>
     )
 }

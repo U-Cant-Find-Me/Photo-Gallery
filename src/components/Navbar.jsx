@@ -42,7 +42,18 @@ const Navbar = () => {
             {/* Below md */}
             <header className="flex items-center w-full min-h-[48px] px-2 bg-white shadow-sm md:hidden">
                 <Link href="/" className="flex items-center min-w-[48px]">
-                    <img className="h-10 w-auto" src="logo.png" alt="logo image" />
+                    <img
+                        className="h-10 w-auto"
+                        src="/logo.png"
+                        alt="logo image"
+                        suppressHydrationWarning={true}
+                        onError={e => {
+                          if (e.target.src !== window.location.origin + '/logo_dark.png') {
+                            e.target.onerror = null;
+                            e.target.src = '/logo_dark.png';
+                          }
+                        }}
+                    />
                 </Link>
                 <div className="flex-1 min-w-0 mx-2">
                     <Search />
@@ -87,7 +98,15 @@ const Navbar = () => {
             {/* md only */}
             <header className="hidden md:flex lg:hidden items-center w-full min-h-[48px] px-2 bg-white shadow-sm">
                 <Link href="/" className="flex items-center min-w-[48px]">
-                    <img className="h-10 w-auto" src="logo.png" alt="logo image" />
+                    <img
+                        className="h-10 w-auto"
+                        src="logo.png"
+                        alt="logo image"
+                        onError={e => {
+                          e.target.onerror = null;
+                          e.target.src = 'logo_dark.png';
+                        }}
+                    />
                 </Link>
                 <div className="flex-1 min-w-0 mx-2">
                     <Search />
@@ -128,7 +147,15 @@ const Navbar = () => {
             {/* above md */}
             <header className="hidden lg:flex items-center w-full min-h-[48px] px-2 bg-white shadow-sm">
                 <Link href="/" className="flex items-center min-w-[48px]">
-                    <img className="h-10 w-auto" src="logo.png" alt="logo image" />
+                    <img
+                        className="h-10 w-auto"
+                        src="logo.png"
+                        alt="logo image"
+                        onError={e => {
+                          e.target.onerror = null;
+                          e.target.src = 'logo_dark.png';
+                        }}
+                    />
                 </Link>
                 <div className="flex-1 min-w-0 mx-2">
                     <Search />

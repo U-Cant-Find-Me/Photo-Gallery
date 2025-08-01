@@ -139,7 +139,11 @@ const PixabayAPI = ({ category }) => {
     return (
         <>
             {pixabayData.map((data, index) => (
-                <li className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto" key={`pixabay-${data.id}-${index}`}>
+                <li 
+                    className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
+                    key={`pixabay-${data.id}-${index}`}
+                    onClick={() => onImageClick && onImageClick(data.webformatURL, data.tags || 'Pixabay image')}
+                >
                     <LazyImage 
                         src={data.webformatURL} 
                         alt={data.tags || 'Pixabay image'} 
@@ -149,12 +153,20 @@ const PixabayAPI = ({ category }) => {
                         style={{ minWidth: '380px' }}
                         priority={index < 3}
                     />
-                    {
-                        data.tags &&
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            {data.tags}
-                        </div>
-                    }
+                    {/* Like button at top right, no background */}
+                    <button className="absolute top-2 right-2 flex items-center gap-1 text-white z-10 hover:cursor-pointer">
+                        <svg className="w-6 h-6 drop-shadow" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" /></svg>
+                        <span className="text-base font-semibold drop-shadow">{data.likes ?? 0}</span>
+                    </button>
+                    {/* Collection button remains at bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded shadow hover:bg-blue-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.75v14.5m7.25-7.25H4.75" />
+                            </svg>
+                            <span>Add to Collection</span>
+                        </button>
+                    </div>
                 </li>
             ))}
             
