@@ -147,7 +147,22 @@ const UnsplashAPI = ({ category, onImageClick }) => {
                 <li 
                     className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
                     key={`unsplash-${data.id}-${index}`}
-                    onClick={() => onImageClick && onImageClick(data.urls?.regular, data.alt_description || data.description || 'Unsplash image')}
+                    onClick={() => onImageClick && onImageClick({
+                        url: data.urls?.regular,
+                        fullUrl: data.urls?.raw || data.urls?.full || data.urls?.regular,
+                        alt: data.alt_description || data.description || 'Unsplash image',
+                        photographer: data.user?.name || 'Unknown',
+                        photographerUsername: data.user?.username,
+                        photographerAvatar: data.user?.profile_image?.small,
+                        likes: data.likes ?? 0,
+                        downloads: data.downloads ?? 0,
+                        source: 'Unsplash',
+                        sourceUrl: data.links?.html,
+                        id: data.id,
+                        width: data.width,
+                        height: data.height,
+                        tags: data.tags?.map(tag => tag.title) || []
+                    })}
                 >
                     <LazyImage 
                         src={data.urls?.regular} 

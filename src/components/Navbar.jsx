@@ -6,10 +6,12 @@ import Link from 'next/link';
 import Search from './Search';
 import NotificationSidebar from './NotificationSidebar';
 import NotificationPopup from './NotificationPopup';
+import { useNotifications } from './NotificationContext';
 import { CgProfile } from 'react-icons/cg';
 import { MdNotificationsActive } from 'react-icons/md';
 import { VscThreeBars } from 'react-icons/vsc';
 import { BsCloudUpload } from "react-icons/bs";
+import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs';
 
 const Navbar = () => {
     const [showPopup, setShowPopup] = useState(false);
@@ -18,6 +20,8 @@ const Navbar = () => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [showDropdownMd, setShowDropdownMd] = useState(false);
     const pathname = usePathname();
+    const { unreadCount } = useNotifications();
+    const { isSignedIn, user, isLoaded } = useUser();
 
     const handleNotifClose = () => {
         setNotifClosing(true);
@@ -36,6 +40,122 @@ const Navbar = () => {
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    const NotificationBadge = ({ children, count }) => (
+        <div className="relative">
+            {children}
+            {count > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                    {count > 99 ? '99+' : count}
+                </div>
+            )}
+        </div>
+    );
+
+    // Authentication components for different layouts
+    const AuthButtonsDropdown = ({ onItemClick }) => {
+        if (!isLoaded) {
+            return (
+                <li>
+                    <div className="w-full flex items-center px-4 py-2 text-gray-400">
+                        <div className="animate-pulse flex items-center">
+                            <div className="w-6 h-6 bg-gray-300 rounded-full mr-2"></div>
+                            Loading...
+                        </div>
+                    </div>
+                </li>
+            );
+        }
+
+        if (isSignedIn) {
+            return (
+                <li>
+                    <div className="w-full flex items-center px-4 py-2 text-gray-700 hover:text-black">
+                        <div className="mr-2">
+                            <UserButton 
+                                appearance={{
+                                    elements: {
+                                        avatarBox: "w-6 h-6",
+                                        userButtonPopoverCard: "shadow-xl border",
+                                        userButtonPopoverActionButton: "hover:bg-gray-50"
+                                    }
+                                }}
+                            />
+                        </div>
+                        <span className="font-medium">
+                            {user?.firstName || user?.username || 'Profile'}
+                        </span>
+                    </div>
+                </li>
+            );
+        }
+
+        return (
+            <>
+                <li>
+                    <SignInButton mode="modal">
+                        <button 
+                            className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black transition-colors"
+                            onClick={onItemClick}
+                        >
+                            <CgProfile className="mr-2 text-2xl" /> Sign In
+                        </button>
+                    </SignInButton>
+                </li>
+                <li>
+                    <SignUpButton mode="modal">
+                        <button 
+                            className="w-full flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                            onClick={onItemClick}
+                        >
+                            <CgProfile className="mr-2 text-2xl" /> Sign Up
+                        </button>
+                    </SignUpButton>
+                </li>
+            </>
+        );
+    };
+
+    const AuthButtonDesktop = () => {
+        if (!isLoaded) {
+            return (
+                <div className="flex items-center px-2 py-2 text-gray-400">
+                    <div className="animate-pulse w-6 h-6 bg-gray-300 rounded-full"></div>
+                </div>
+            );
+        }
+
+        if (isSignedIn) {
+            return (
+                <div className="flex items-center px-2 py-2">
+                    <UserButton 
+                        appearance={{
+                            elements: {
+                                avatarBox: "w-8 h-8 transition-transform hover:scale-105",
+                                userButtonPopoverCard: "shadow-xl border",
+                                userButtonPopoverActionButton: "hover:bg-gray-50"
+                            }
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        return (
+            <div className="flex items-center gap-2">
+                <SignInButton mode="modal">
+                    <button className="flex items-center px-3 py-1.5 text-gray-600 hover:text-black transition-colors text-sm font-medium border border-gray-300 rounded-lg hover:border-gray-400">
+                        Sign In
+                    </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                    <button className="flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white transition-colors text-sm font-medium rounded-lg">
+                        Sign Up
+                    </button>
+                </SignUpButton>
+            </div>
+        );
+    };
 
     return (
         <div className="relative w-full">
@@ -66,8 +186,8 @@ const Navbar = () => {
                         <div id="navbar-xs-dropdown" className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-fadeIn">
                             <ul className="flex flex-col py-2">
                                 <li>
-                                    <Link href="/advertise" onClick={() => setShowDropdown(false)}>
-                                        <span className={`block font-bold text-base px-4 py-2 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertise</span>
+                                    <Link href="/collection" onClick={() => setShowDropdown(false)}>
+                                        <span className={`block font-bold text-base px-4 py-2 transition-colors ${pathname === '/collection' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Collections</span>
                                     </Link>
                                 </li>
                                 <li>
@@ -82,14 +202,13 @@ const Navbar = () => {
                                 </li>
                                 <li>
                                     <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black" onClick={() => { setShowNotif(true); setShowDropdown(false); }}>
-                                        <MdNotificationsActive className="mr-2 text-2xl" /> Notifications
+                                        <NotificationBadge count={unreadCount}>
+                                            <MdNotificationsActive className="mr-2 text-2xl" />
+                                        </NotificationBadge>
+                                        Notifications
                                     </button>
                                 </li>
-                                <li>
-                                    <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black">
-                                        <CgProfile className="mr-2 text-2xl" /> Profile
-                                    </button>
-                                </li>
+                                <AuthButtonsDropdown onItemClick={() => setShowDropdown(false)} />
                             </ul>
                         </div>
                     )}
@@ -100,19 +219,19 @@ const Navbar = () => {
                 <Link href="/" className="flex items-center min-w-[48px]">
                     <img
                         className="h-10 w-auto"
-                        src="logo.png"
+                        src="/logo.png"
                         alt="logo image"
                         onError={e => {
                           e.target.onerror = null;
-                          e.target.src = 'logo_dark.png';
+                          e.target.src = '/logo_dark.png';
                         }}
                     />
                 </Link>
                 <div className="flex-1 min-w-0 mx-2">
                     <Search />
                 </div>
-                <Link href="/advertise">
-                    <span className={`font-bold text-base px-2 py-2 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertise</span>
+                <Link href="/collection">
+                    <span className={`font-bold text-base px-2 py-2 transition-colors ${pathname === '/collection' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Collection</span>
                 </Link>
                 <Link href="/blog">
                     <span className={`font-bold text-base px-2 py-2 transition-colors ${pathname === '/blog' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Blog</span>
@@ -131,14 +250,13 @@ const Navbar = () => {
                                 </li>
                                 <li>
                                     <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black" onClick={() => { setShowNotif(true); setShowDropdownMd(false); }}>
-                                        <MdNotificationsActive className="mr-2 text-2xl" /> Notifications
+                                        <NotificationBadge count={unreadCount}>
+                                            <MdNotificationsActive className="mr-2 text-2xl" />
+                                        </NotificationBadge>
+                                        Notifications
                                     </button>
                                 </li>
-                                <li>
-                                    <button className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black">
-                                        <CgProfile className="mr-2 text-2xl" /> Profile
-                                    </button>
-                                </li>
+                                <AuthButtonsDropdown onItemClick={() => setShowDropdownMd(false)} />
                             </ul>
                         </div>
                     )}
@@ -149,19 +267,19 @@ const Navbar = () => {
                 <Link href="/" className="flex items-center min-w-[48px]">
                     <img
                         className="h-10 w-auto"
-                        src="logo.png"
+                        src="/logo.png"
                         alt="logo image"
                         onError={e => {
                           e.target.onerror = null;
-                          e.target.src = 'logo_dark.png';
+                          e.target.src = '/logo_dark.png';
                         }}
                     />
                 </Link>
                 <div className="flex-1 min-w-0 mx-2">
                     <Search />
                 </div>
-                <Link href="/advertise">
-                    <span className={`font-bold text-base px-2 py-2 transition-colors ${pathname === '/advertise' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Advertise</span>
+                <Link href="/collection">
+                    <span className={`font-bold text-base px-2 py-2 transition-colors ${pathname === '/collection' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Collection</span>
                 </Link>
                 <Link href="/blog">
                     <span className={`font-bold text-base px-2 py-2 transition-colors ${pathname === '/blog' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Blog</span>
@@ -177,11 +295,11 @@ const Navbar = () => {
                     )}
                 </div>
                 <button className="flex items-center px-2 py-2 text-gray-400 hover:text-black transition-colors" aria-label="Notifications" onClick={() => setShowNotif(true)}>
-                    <MdNotificationsActive className="text-2xl" />
+                    <NotificationBadge count={unreadCount}>
+                        <MdNotificationsActive className="text-2xl" />
+                    </NotificationBadge>
                 </button>
-                <button className="flex items-center px-2 py-2 text-gray-400 hover:text-black transition-colors" aria-label="Profile">
-                    <CgProfile className="text-2xl" />
-                </button>
+                <AuthButtonDesktop />
             </header>
             {/* Notification Sidebar/Popup */}
             {showNotif && (

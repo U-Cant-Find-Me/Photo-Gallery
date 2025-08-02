@@ -41,7 +41,7 @@ const searchPhotos = async (query, page) => {
     }
 };
 
-export default function PexelsAPI({ category }) {
+export default function PexelsAPI({ category, onImageClick }) {
     const [pexelsData, setPexelsData] = useState([]);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState(category || 'nature');
@@ -159,11 +159,24 @@ export default function PexelsAPI({ category }) {
     return (
         <>
             {pexelsData.map((data, index) => (
-                <li 
-                    className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
-                    key={`pexels-${data.id}-${index}`}
-                    onClick={() => onImageClick && onImageClick(data.src?.large, data.alt || 'Pexels image')}
-                >
+            <li 
+                className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
+                key={`pexels-${data.id}-${index}`}
+                onClick={() => onImageClick && onImageClick({
+                    url: data.src?.large,
+                    fullUrl: data.src?.original || data.src?.large2x || data.src?.large,
+                    alt: data.alt || 'Pexels image',
+                    photographer: data.photographer || 'Unknown',
+                    photographerUrl: data.photographer_url,
+                    likes: 0, // Pexels doesn't provide likes in API
+                    source: 'Pexels',
+                    sourceUrl: data.url,
+                    id: data.id,
+                    width: data.width,
+                    height: data.height,
+                    tags: []
+                })}
+            >
                     <LazyImage 
                         src={data.src?.large} 
                         alt={data.alt || 'Pexels image'} 

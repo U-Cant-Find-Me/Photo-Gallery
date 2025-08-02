@@ -23,7 +23,7 @@ const searchPhotos = async (page, category) => {
     return res.data.hits;
 };
 
-const PixabayAPI = ({ category }) => {
+const PixabayAPI = ({ category, onImageClick }) => {
     const [pixabayData, setPixabayData] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -142,7 +142,22 @@ const PixabayAPI = ({ category }) => {
                 <li 
                     className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
                     key={`pixabay-${data.id}-${index}`}
-                    onClick={() => onImageClick && onImageClick(data.webformatURL, data.tags || 'Pixabay image')}
+                    onClick={() => onImageClick && onImageClick({
+                        url: data.webformatURL,
+                        fullUrl: data.fullHDURL || data.largeImageURL || data.webformatURL,
+                        alt: data.tags || 'Pixabay image',
+                        photographer: data.user || 'Pixabay',
+                        photographerAvatar: data.userImageURL,
+                        likes: data.likes ?? 0,
+                        downloads: data.downloads ?? 0,
+                        views: data.views ?? 0,
+                        source: 'Pixabay',
+                        sourceUrl: `https://pixabay.com/photos/${data.id}/`,
+                        id: data.id,
+                        width: data.imageWidth,
+                        height: data.imageHeight,
+                        tags: data.tags ? data.tags.split(', ') : []
+                    })}
                 >
                     <LazyImage 
                         src={data.webformatURL} 

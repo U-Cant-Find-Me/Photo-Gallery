@@ -1,7 +1,7 @@
 'use client';
 // import { use } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, use as usePromise, useState } from 'react';
+import { Suspense, use as usePromise, useState, useEffect } from 'react';
 import SecondaryBar from '@/components/SecondaryBar';
 import UnsplashAPI from '@/backend/api/UnsplashAPI';
 import PixabayAPI from '@/backend/api/PixabayAPI';
@@ -30,12 +30,50 @@ const CategoryPageContent = ({ params }) => {
     config
   } = useProgressiveLoading(totalComponents);
 
-  // Modal state
+  // Enhanced modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalImg, setModalImg] = useState({ url: '', alt: '' });
-  const handleImageClick = (url, alt) => {
-    setModalImg({ url, alt });
+  const [modalImg, setModalImg] = useState(null);
+  const [allImages, setAllImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const handleImageClick = (imageData) => {
+    // Find index of clicked image in allImages array
+    const index = allImages.findIndex(img => img.id === imageData.id && img.source === imageData.source);
+    
+    if (index !== -1) {
+      setCurrentImageIndex(index);
+      setModalImg(imageData);
+    } else {
+      // If image not found in array, add it and set as current
+      setAllImages(prev => [...prev, imageData]);
+      setCurrentImageIndex(allImages.length);
+      setModalImg(imageData);
+    }
     setModalOpen(true);
+  };
+
+  const handleNext = () => {
+    if (currentImageIndex < allImages.length - 1) {
+      const nextIndex = currentImageIndex + 1;
+      setCurrentImageIndex(nextIndex);
+      setModalImg(allImages[nextIndex]);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentImageIndex > 0) {
+      const prevIndex = currentImageIndex - 1;
+      setCurrentImageIndex(prevIndex);
+      setModalImg(allImages[prevIndex]);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    // Small delay to let animation finish
+    setTimeout(() => {
+      setModalImg(null);
+    }, 300);
   };
 
   const renderComponent = (index) => {
@@ -90,8 +128,18 @@ const CategoryPageContent = ({ params }) => {
         <ul className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
           {Array.from({ length: totalComponents }, (_, index) => renderComponent(index))}
         </ul>
-        {/* Modal for image preview */}
-        <ImageModal isOpen={modalOpen} onClose={() => setModalOpen(false)} imageUrl={modalImg.url} alt={modalImg.alt} />
+        {/* Enhanced Modal for image preview */}
+        <ImageModal 
+          isOpen={modalOpen} 
+          onClose={handleCloseModal} 
+          imageData={modalImg}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
+          canGoNext={currentImageIndex < allImages.length - 1}
+          canGoPrevious={currentImageIndex > 0}
+          currentIndex={currentImageIndex + 1}
+          totalImages={allImages.length}
+        />
       </div>
     </>
   );

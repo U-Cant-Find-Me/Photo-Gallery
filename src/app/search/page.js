@@ -45,11 +45,50 @@ const apiList = [
 
 function SearchResultsContent() {
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalImg, setModalImg] = useState({ url: '', alt: '' });
-    const handleImageClick = (url, alt) => {
-        setModalImg({ url, alt });
+    const [modalImg, setModalImg] = useState(null);
+    const [allImages, setAllImages] = useState([]);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const handleImageClick = (imageData) => {
+        // Find index of clicked image in allImages array
+        const index = allImages.findIndex(img => img.id === imageData.id && img.source === imageData.source);
+        
+        if (index !== -1) {
+            setCurrentImageIndex(index);
+            setModalImg(imageData);
+        } else {
+            // If image not found in array, add it and set as current
+            setAllImages(prev => [...prev, imageData]);
+            setCurrentImageIndex(allImages.length);
+            setModalImg(imageData);
+        }
         setModalOpen(true);
     };
+
+    const handleNext = () => {
+        if (currentImageIndex < allImages.length - 1) {
+            const nextIndex = currentImageIndex + 1;
+            setCurrentImageIndex(nextIndex);
+            setModalImg(allImages[nextIndex]);
+        }
+    };
+
+    const handlePrevious = () => {
+        if (currentImageIndex > 0) {
+            const prevIndex = currentImageIndex - 1;
+            setCurrentImageIndex(prevIndex);
+            setModalImg(allImages[prevIndex]);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        // Small delay to let animation finish
+        setTimeout(() => {
+            setModalImg(null);
+        }, 300);
+    };
+
     const searchParams = useSearchParams();
     const query = searchParams.get('q') || '';
     const [results, setResults] = useState({});
@@ -58,6 +97,91 @@ function SearchResultsContent() {
     const [pages, setPages] = useState({ Unsplash: 1, Pixabay: 1, Pexels: 1, Picsum: 1 });
     const [hasMore, setHasMore] = useState({ Unsplash: true, Pixabay: true, Pexels: true, Picsum: true });
     const loaderRef = useRef(null);
+
+    // Helper function to create enhanced image data
+    const createImageData = (img, api, idx) => {
+        let imageData = {
+            id: '',
+            url: '',
+            fullUrl: '',
+            alt: '',
+            photographer: '',
+            photographerAvatar: '',
+            likes: 0,
+            downloads: 0,
+            source: api.name,
+            sourceUrl: '',
+            width: 0,
+            height: 0,
+            tags: []
+        };
+
+        if (api.name === 'Unsplash') {
+            imageData = {
+                ...imageData,
+                id: img.id,
+                url: img.urls?.regular,
+                fullUrl: img.urls?.raw || img.urls?.full || img.urls?.regular,
+                alt: img.alt_description || img.description || 'Unsplash image',
+                photographer: img.user?.name || 'Unknown',
+                photographerUsername: img.user?.username,
+                photographerAvatar: img.user?.profile_image?.small,
+                likes: img.likes ?? 0,
+                downloads: img.downloads ?? 0,
+                sourceUrl: img.links?.html,
+                width: img.width,
+                height: img.height,
+                tags: img.tags?.map(tag => tag.title) || []
+            };
+        } else if (api.name === 'Pixabay') {
+            imageData = {
+                ...imageData,
+                id: img.id,
+                url: img.webformatURL,
+                fullUrl: img.fullHDURL || img.largeImageURL || img.webformatURL,
+                alt: img.tags || 'Pixabay image',
+                photographer: img.user || 'Pixabay',
+                photographerAvatar: img.userImageURL,
+                likes: img.likes ?? 0,
+                downloads: img.downloads ?? 0,
+                views: img.views ?? 0,
+                sourceUrl: `https://pixabay.com/photos/${img.id}/`,
+                width: img.imageWidth,
+                height: img.imageHeight,
+                tags: img.tags ? img.tags.split(', ') : []
+            };
+        } else if (api.name === 'Pexels') {
+            imageData = {
+                ...imageData,
+                id: img.id,
+                url: img.src?.large,
+                fullUrl: img.src?.original || img.src?.large2x || img.src?.large,
+                alt: img.alt || 'Pexels image',
+                photographer: img.photographer || 'Unknown',
+                photographerUrl: img.photographer_url,
+                likes: 0, // Pexels doesn't provide likes in API
+                sourceUrl: img.url,
+                width: img.width,
+                height: img.height,
+                tags: []
+            };
+        }
+
+        return imageData;
+    };
+
+    // Update allImages when results change
+    useEffect(() => {
+        const imageArray = [];
+        apiList.forEach(api => {
+            if (results[api.name]?.data) {
+                results[api.name].data.forEach((img, idx) => {
+                    imageArray.push(createImageData(img, api, idx));
+                });
+            }
+        });
+        setAllImages(imageArray);
+    }, [results]);
 
     // Initial fetch
     useEffect(() => {
@@ -145,30 +269,16 @@ function SearchResultsContent() {
                         ) : (
                             <ul className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {(results[api.name]?.data || []).map((img, idx) => {
-                                    let src = '';
-                                    let alt = '';
-                                    if (api.name === 'Unsplash') {
-                                        src = img.urls?.regular;
-                                        alt = img.alt_description || img.description || 'Unsplash image';
-                                    } else if (api.name === 'Pixabay') {
-                                        src = img.webformatURL;
-                                        alt = img.tags || 'Pixabay image';
-                                    } else if (api.name === 'Pexels') {
-                                        src = img.src?.large;
-                                        alt = img.alt || 'Pexels image';
-                                    } else if (api.name === 'Picsum') {
-                                        src = img.download_url;
-                                        alt = img.author || 'Picsum image';
-                                    }
+                                    const imageData = createImageData(img, api, idx);
                                     return (
                                         <li
-                                            key={src + idx}
+                                            key={imageData.url + idx}
                                             className="relative group overflow-hidden rounded-2xl shadow-xl border border-gray-200 bg-white w-full max-w-[420px] mx-auto transition-transform duration-200 hover:scale-[1.025] hover:shadow-2xl cursor-pointer"
-                                            onClick={() => handleImageClick(src, alt)}
+                                            onClick={() => handleImageClick(imageData)}
                                         >
                                             <LazyImage
-                                                src={src}
-                                                alt={alt}
+                                                src={imageData.url}
+                                                alt={imageData.alt}
                                                 width={420}
                                                 height={450}
                                                 className="w-full h-[450px] object-cover transition-transform duration-300 group-hover:scale-105"
@@ -179,12 +289,7 @@ function SearchResultsContent() {
                                             <button className="absolute top-2 right-2 flex items-center gap-1 text-white z-10">
                                                 {/* Heart icon SVG */}
                                                 <svg className="w-6 h-6 drop-shadow" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" /></svg>
-                                                <span className="text-base font-semibold drop-shadow">{
-                                                    api.name === 'Unsplash' ? (img.likes ?? 0) :
-                                                        api.name === 'Pixabay' ? (img.likes ?? 0) :
-                                                            api.name === 'Pexels' ? (img.likes ?? 0) :
-                                                                api.name === 'Picsum' ? (img.likes ?? 0) : 0
-                                                }</span>
+                                                <span className="text-base font-semibold drop-shadow">{imageData.likes}</span>
                                             </button>
                                             {/* Collection button at bottom center, visible on hover */}
                                             <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -195,11 +300,6 @@ function SearchResultsContent() {
                                                     <span>Add to Collection</span>
                                                 </button>
                                             </div>
-                                            {/* {alt && (
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-center p-3 text-base font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    {alt}
-                                                </div>
-                                            )} */}
                                         </li>
                                     );
                                 })}
@@ -219,7 +319,17 @@ function SearchResultsContent() {
                     )}
                 </div>
             </div>
-            <ImageModal isOpen={modalOpen} onClose={() => setModalOpen(false)} imageUrl={modalImg.url} alt={modalImg.alt} />
+            <ImageModal 
+                isOpen={modalOpen} 
+                onClose={handleCloseModal} 
+                imageData={modalImg}
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+                canGoNext={currentImageIndex < allImages.length - 1}
+                canGoPrevious={currentImageIndex > 0}
+                currentIndex={currentImageIndex + 1}
+                totalImages={allImages.length}
+            />
             <style jsx global>{`
                 body { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%); }
             `}</style>

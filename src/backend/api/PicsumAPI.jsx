@@ -25,7 +25,7 @@ const searchPhotos = async (page) => {
     }
 }
 
-const PicsumAPI = ({ category }) => {
+const PicsumAPI = ({ category, onImageClick }) => {
     const [picsumData, setPicsumData] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -148,7 +148,19 @@ const PicsumAPI = ({ category }) => {
                 <li 
                     className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
                     key={`picsum-${data.id}-${index}`}
-                    onClick={() => onImageClick && onImageClick(data.download_url, data.author || 'Picsum image')}
+                    onClick={() => onImageClick && onImageClick({
+                        url: data.download_url,
+                        fullUrl: data.download_url,
+                        alt: data.author || 'Picsum image',
+                        photographer: data.author || 'Unknown',
+                        likes: 0, // Picsum doesn't provide likes
+                        source: 'Picsum',
+                        sourceUrl: `https://picsum.photos/id/${data.id}/info`,
+                        id: data.id,
+                        width: data.width,
+                        height: data.height,
+                        tags: []
+                    })}
                 >
                     <LazyImage 
                         src={data.download_url} 
