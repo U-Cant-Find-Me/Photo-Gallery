@@ -2,7 +2,6 @@
 // import { use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, use as usePromise, useState } from 'react';
-import ImageGridSkeleton from '@/components/ImageGridSkeleton';
 import SecondaryBar from '@/components/SecondaryBar';
 import UnsplashAPI from '@/backend/api/UnsplashAPI';
 import PixabayAPI from '@/backend/api/PixabayAPI';
@@ -13,8 +12,10 @@ import ImageModal from '@/components/ImageModal';
 
 const CategoryPageContent = ({ params }) => {
   const searchParams = useSearchParams();
-  // Unwrap params if it's a promise (Next.js 14+)
-  const unwrappedParams = typeof params?.then === 'function' ? usePromise(params) : params;
+  // Always call usePromise to avoid conditional hook call
+  const promiseValue = usePromise(params);
+  const isPromise = typeof params?.then === 'function';
+  const unwrappedParams = isPromise ? promiseValue : params;
   const { name } = unwrappedParams;
   const q = searchParams.get('q') || name;
   const totalComponents = 4;
