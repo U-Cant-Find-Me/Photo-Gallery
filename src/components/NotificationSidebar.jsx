@@ -28,6 +28,9 @@ const NotificationSidebar = ({ open, onClose, notifClosing }) => {
             case 'unlike': return '💔';
             case 'download': return '📥';
             case 'collection': return '📚';
+            case 'auth': return '✅';
+            case 'auth_fail': return '❌';
+            case 'auth_out': return '🚪';
             default: return '🔔';
         }
     };

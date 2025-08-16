@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import { CollectionProvider } from '@/components/CollectionContext';
 import ErrorBoundary from '@/components/ErrorHandling/ErrorBoundary'
 import { Toaster } from 'react-hot-toast'
 import { NotificationProvider } from '@/components/NotificationContext'
@@ -26,25 +27,27 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning={true}>
-          <NotificationProvider>
-            <ErrorBoundary>
-              <Navbar />
-              {children}
-              <Toaster 
-                position="top-center"
-                toastOptions={{
-                  duration: 3000,
-                  style: {
-                    background: '#1f2937',
-                    color: '#f9fafb',
-                    border: '1px solid #374151',
-                    borderRadius: '12px',
-                    fontWeight: '500',
-                  },
-                }}
-              />
-            </ErrorBoundary>
-          </NotificationProvider>
+          <CollectionProvider>
+            <NotificationProvider>
+              <ErrorBoundary>
+                <Navbar />
+                {children}
+                <Toaster 
+                  position="top-center"
+                  toastOptions={{
+                    duration: 3000,
+                    style: {
+                      background: '#1f2937',
+                      color: '#f9fafb',
+                      border: '1px solid #374151',
+                      borderRadius: '12px',
+                      fontWeight: '500',
+                    },
+                  }}
+                />
+              </ErrorBoundary>
+            </NotificationProvider>
+          </CollectionProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -7,6 +7,7 @@ import Search from './Search';
 import NotificationSidebar from './NotificationSidebar';
 import NotificationPopup from './NotificationPopup';
 import { useNotifications } from './NotificationContext';
+import toast from 'react-hot-toast';
 import { CgProfile } from 'react-icons/cg';
 import { MdNotificationsActive } from 'react-icons/md';
 import { VscThreeBars } from 'react-icons/vsc';
@@ -20,8 +21,11 @@ const Navbar = () => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [showDropdownMd, setShowDropdownMd] = useState(false);
     const pathname = usePathname();
-    const { unreadCount } = useNotifications();
+    const { unreadCount, addNotification } = useNotifications();
     const { isSignedIn, user, isLoaded } = useUser();
+    const [authIntent, setAuthIntent] = useState(null); // 'sign-in' | 'sign-up' | null
+    const authCancelTimerRef = React.useRef(null);
+    const prevSignedInRef = React.useRef(isSignedIn);
 
     const handleNotifClose = () => {
         setNotifClosing(true);
@@ -40,6 +44,66 @@ const Navbar = () => {
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    // Show toast + notification on successful auth and on sign-out
+    React.useEffect(() => {
+        if (!isLoaded) return;
+        const wasSignedIn = prevSignedInRef.current;
+        if (!wasSignedIn && isSignedIn) {
+            const actionLabel = authIntent === 'sign-up' ? 'Sign up' : 'Sign in';
+            toast.success(`${actionLabel} successful!`);
+            addNotification({
+                type: 'auth',
+                title: `${actionLabel} successful`,
+                message: `Welcome${user?.firstName ? `, ${user.firstName}` : ''}!`,
+            });
+            setAuthIntent(null);
+            if (authCancelTimerRef.current) {
+                clearTimeout(authCancelTimerRef.current);
+                authCancelTimerRef.current = null;
+            }
+        } else if (wasSignedIn && !isSignedIn) {
+            toast.success('Signed out successfully');
+            addNotification({
+                type: 'auth_out',
+                title: 'Signed out',
+                message: 'You have been signed out successfully.',
+            });
+            setAuthIntent(null);
+            if (authCancelTimerRef.current) {
+                clearTimeout(authCancelTimerRef.current);
+                authCancelTimerRef.current = null;
+            }
+        }
+        prevSignedInRef.current = isSignedIn;
+    }, [isLoaded, isSignedIn, authIntent, addNotification, user?.firstName]);
+
+    // Fallback: if auth modal opened but not completed within timeout, treat as unsuccessful/canceled
+    React.useEffect(() => {
+        if (!authIntent) return;
+        if (authCancelTimerRef.current) {
+            clearTimeout(authCancelTimerRef.current);
+            authCancelTimerRef.current = null;
+        }
+        authCancelTimerRef.current = setTimeout(() => {
+            if (!isSignedIn) {
+                const actionLabel = authIntent === 'sign-up' ? 'Sign up' : 'Sign in';
+                toast.error(`${actionLabel} unsuccessful or cancelled.`);
+                addNotification({
+                    type: 'auth_fail',
+                    title: `${actionLabel} unsuccessful`,
+                    message: `The ${actionLabel.toLowerCase()} attempt didn't complete.`,
+                });
+                setAuthIntent(null);
+            }
+        }, 45000); // 45s window
+        return () => {
+            if (authCancelTimerRef.current) {
+                clearTimeout(authCancelTimerRef.current);
+                authCancelTimerRef.current = null;
+            }
+        };
+    }, [authIntent, isSignedIn, addNotification]);
 
     const NotificationBadge = ({ children, count }) => (
         <div className="relative">
@@ -96,7 +160,7 @@ const Navbar = () => {
                     <SignInButton mode="modal">
                         <button 
                             className="w-full flex items-center px-4 py-2 text-gray-400 hover:text-black transition-colors"
-                            onClick={onItemClick}
+                            onClick={() => { setAuthIntent('sign-in'); onItemClick && onItemClick(); }}
                         >
                             <CgProfile className="mr-2 text-2xl" /> Sign In
                         </button>
@@ -106,7 +170,7 @@ const Navbar = () => {
                     <SignUpButton mode="modal">
                         <button 
                             className="w-full flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                            onClick={onItemClick}
+                            onClick={() => { setAuthIntent('sign-up'); onItemClick && onItemClick(); }}
                         >
                             <CgProfile className="mr-2 text-2xl" /> Sign Up
                         </button>
@@ -144,12 +208,12 @@ const Navbar = () => {
         return (
             <div className="flex items-center gap-2">
                 <SignInButton mode="modal">
-                    <button className="flex items-center px-3 py-1.5 text-gray-600 hover:text-black transition-colors text-sm font-medium border border-gray-300 rounded-lg hover:border-gray-400">
+                    <button onClick={() => setAuthIntent('sign-in')} className="flex items-center px-3 py-1.5 text-gray-600 hover:text-black hover:cursor-pointer transition-colors text-sm font-medium border border-gray-300 rounded-lg hover:border-gray-400">
                         Sign In
                     </button>
                 </SignInButton>
                 <SignUpButton mode="modal">
-                    <button className="flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white transition-colors text-sm font-medium rounded-lg">
+                    <button onClick={() => setAuthIntent('sign-up')} className="flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 hover:cursor-pointer text-white transition-colors text-sm font-medium rounded-lg">
                         Sign Up
                     </button>
                 </SignUpButton>

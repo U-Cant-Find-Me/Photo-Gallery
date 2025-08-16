@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { useNotifications } from './NotificationContext';
+import { useCollection } from './CollectionContext';
+import { useUser, useClerk } from '@clerk/nextjs';
 
 const ImageModal = ({ 
   isOpen, 
@@ -30,6 +32,16 @@ const ImageModal = ({
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   
   const { addNotification } = useNotifications();
+  const { addToCollection } = useCollection();
+  const { isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
+
+  const ensureAuth = useCallback(async (actionLabel) => {
+    if (isSignedIn) return true;
+    toast.error(`Please sign in to ${actionLabel}.`);
+    try { await openSignIn?.(); } catch (_) {}
+    return false;
+  }, [isSignedIn, openSignIn]);
 
   // Reset states when modal opens/closes or image changes
   useEffect(() => {
@@ -225,6 +237,7 @@ const ImageModal = ({
 
   // Action handlers
   const handleDownload = async () => {
+    if (!(await ensureAuth('download images'))) return;
     try {
       // Priority order for highest quality image
       let downloadUrl = imageData.url; // fallback
@@ -311,6 +324,11 @@ const ImageModal = ({
   };
 
   const handleLike = () => {
+    if (!isSignedIn) {
+      toast.error('Please sign in to like images.');
+      try { openSignIn?.(); } catch (_) {}
+      return;
+    }
     setIsLiked(!isLiked);
     
     if (!isLiked) {
@@ -372,26 +390,26 @@ const ImageModal = ({
   };
 
   const handleAddToCollection = () => {
-    // Placeholder for collection functionality
-    setShowTooltip('Collection feature coming soon!');
+    if (!isSignedIn) {
+      toast.error('Please sign in to add images to collection.');
+      try { openSignIn?.(); } catch (_) {}
+      return;
+    }
+    const success = addToCollection(imageData);
+    if (!success) {
+      setShowTooltip('Selected Image Already added to the collection');
+      setTimeout(() => setShowTooltip(''), 2000);
+      toast.error('Selected Image Already added to the collection');
+      return;
+    }
+    setShowTooltip('📚 Added to collection!');
     setTimeout(() => setShowTooltip(''), 2000);
-    
-    // Add notification for collection
     addNotification({
       type: 'collection',
       title: 'Added to Collection',
       message: `Added "${imageData.alt}" by ${imageData.photographer} to your collection`,
       imageData: imageData
     });
-    
-    // toast.success('📚 Added to collection!', {
-    //   duration: 2000,
-    //   icon: '✨',
-    //   style: {
-    //     background: '#059669',
-    //     color: '#ffffff',
-    //   },
-    // });
   };
 
   const handleImageLoad = (e) => {
@@ -651,7 +669,7 @@ const ImageModal = ({
           <div className="flex flex-wrap gap-3">
             {/* Like button */}
             <button
-              className={`px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm ${
+              className={`px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm hover:cursor-pointer ${
                 isLiked 
                   ? 'bg-red-600 hover:bg-red-700 text-white' 
                   : 'bg-gray-700/80 hover:bg-red-600 text-white border border-gray-600/50 hover:border-red-500'
@@ -665,7 +683,7 @@ const ImageModal = ({
             </button>
 
             <button
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm hover:cursor-pointer"
               onClick={handleDownload}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -675,7 +693,7 @@ const ImageModal = ({
             </button>
             
             <button
-              className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm border border-gray-600/50"
+              className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm border border-gray-600/50 hover:cursor-pointer"
               onClick={handleShare}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -685,7 +703,7 @@ const ImageModal = ({
             </button>
             
             <button
-              className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm border border-gray-600/50"
+              className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 backdrop-blur-sm border border-gray-600/50 hover:cursor-pointer"
               onClick={handleAddToCollection}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -5,6 +5,8 @@ import axios from 'axios';
 import LazyImage from '@/components/LazyImage';
 import ErrorMessage from '@/components/ErrorHandling/ErrorMessage';
 import useErrorHandler from '@/hooks/useErrorHandler';
+import { useCollection } from '@/components/CollectionContext';
+import toast from 'react-hot-toast';
 
 const pexels_api_key = process.env.NEXT_PUBLIC_API_PEXELS;
 const pexels_enpoint_url = `https://api.pexels.com/v1/curated`;
@@ -42,6 +44,7 @@ const searchPhotos = async (query, page) => {
 };
 
 export default function PexelsAPI({ category, onImageClick }) {
+    const { addToCollection } = useCollection();
     const [pexelsData, setPexelsData] = useState([]);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState(category || 'nature');
@@ -158,25 +161,27 @@ export default function PexelsAPI({ category, onImageClick }) {
 
     return (
         <>
-            {pexelsData.map((data, index) => (
-            <li 
-                className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
-                key={`pexels-${data.id}-${index}`}
-                onClick={() => onImageClick && onImageClick({
+            {pexelsData.map((data, index) => {
+                const imageObj = {
                     url: data.src?.large,
                     fullUrl: data.src?.original || data.src?.large2x || data.src?.large,
                     alt: data.alt || 'Pexels image',
                     photographer: data.photographer || 'Unknown',
                     photographerUrl: data.photographer_url,
-                    likes: 0, // Pexels doesn't provide likes in API
+                    likes: 0,
                     source: 'Pexels',
                     sourceUrl: data.url,
                     id: data.id,
                     width: data.width,
                     height: data.height,
                     tags: []
-                })}
-            >
+                };
+                return (
+                <li 
+                    className="relative group overflow-hidden rounded-xl shadow-2xl border border-gray-700 bg-gray-800 w-full max-w-[420px] mx-auto cursor-pointer" 
+                    key={`pexels-${data.id}-${index}`}
+                    onClick={() => onImageClick && onImageClick(imageObj)}
+                >
                     <LazyImage 
                         src={data.src?.large} 
                         alt={data.alt || 'Pexels image'} 
@@ -193,7 +198,18 @@ export default function PexelsAPI({ category, onImageClick }) {
                     </button>
                     {/* Collection button remains at bottom */}
                     <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded shadow hover:bg-blue-700">
+                        <button
+                            className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded shadow hover:bg-blue-700 hover:cursor-pointer"
+                            onClick={e => {
+                                e.stopPropagation();
+                                const success = addToCollection(imageObj);
+                                if (!success) {
+                                    toast.error('Selected Image Already added to the collection');
+                                } else {
+                                    toast.success('📚 Added to collection!');
+                                }
+                            }}
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.75v14.5m7.25-7.25H4.75" />
                             </svg>
@@ -201,7 +217,8 @@ export default function PexelsAPI({ category, onImageClick }) {
                         </button>
                     </div>
                 </li>
-            ))}
+                );
+            })}
             
             {/* Loading more indicator */}
             {hasMore && (
