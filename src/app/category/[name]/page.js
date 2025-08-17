@@ -7,7 +7,7 @@ import UnsplashAPI from '@/backend/api/UnsplashAPI';
 import PixabayAPI from '@/backend/api/PixabayAPI';
 import PicsumAPI from '@/backend/api/PicsumAPI';
 import PexelsAPI from '@/backend/api/PexelsAPI';
-import useProgressiveLoading from '@/components/useProgressiveLoading';
+import useProgressiveLoading from '@/hooks/useProgressiveLoading';
 import ImageModal from '@/components/ImageModal';
 
 const CategoryPageContent = ({ params }) => {
