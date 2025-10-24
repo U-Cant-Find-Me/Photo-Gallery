@@ -1,28 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@300;400;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Color tokens */
+  --bg: #F8FAFC; /* page background */
+  --surface: #ffffff; /* card surface */
+  --text: #1E293B; /* primary text */
+  --muted: #64748B; /* muted text */
+  --primary: #3B82F6; /* primary blue */
+  --success: #10B981; /* success green */
+  --radius: 12px; /* consistent corner radius */
+  --shadow-sm: 0 4px 6px rgba(0,0,0,0.08);
+  --transition-fast: 200ms;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html, body, #__next {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.45;
 }
 
+/* Utility defaults used by components */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+.card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+.rounded-12 { border-radius: var(--radius); }
+.transition-fast { transition: all var(--transition-fast) ease; }
+
 /* Hide scrollbar for all browsers */
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* IE & Edge */
-  scrollbar-width: none;     /* Firefox */
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari, Opera */
-}
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Small helpers */
+.muted { color: var(--muted); }
+.btn-primary { background: linear-gradient(90deg, var(--primary), #6366F1); color: white; }
+

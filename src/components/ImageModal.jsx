@@ -730,7 +730,7 @@ const ImageModal = ({
           {/* Keyboard shortcuts hint */}
           <div className="mt-4 pt-4 border-t border-white/50 hidden md:block">
             <p className="text-gray-400 text-xs">
-              <span className="font-semibold">Keyboard shortcuts:</span> ← → for navigation, Space to zoom, + - for zoom in/out, 0 to reset, Esc to close
+              <span className="font-semibold">Keyboard shortcuts:</span> Space to zoom, + - for zoom in/out, 0 to reset, Esc to close
             </p>
           </div>
         </div>
