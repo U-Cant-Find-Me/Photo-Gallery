@@ -3,9 +3,7 @@ export const validateEnvVars = () => {
   const requiredVars = [
     'NEXT_PUBLIC_API_UNSPLASH',
     'NEXT_PUBLIC_API_PIXABAY',
-    'NEXT_PUBLIC_API_PEXELS',
-    'NEXT_PUBLIC_GEMINI_API_KEY',
-    'GEMINI_API_KEY'
+    'NEXT_PUBLIC_API_PEXELS'
   ];
 
   const missing = requiredVars.filter(key => !process.env[key]);
@@ -18,7 +16,7 @@ export const validateEnvVars = () => {
       console.error('❌ Environment Variables Error:', errorMessage);
       console.error('📝 Please add the following to your .env.local file:');
       missing.forEach(key => {
-        console.error(`   ${key}=your_GEMINI_API_KEY_here`);
+        console.error(`   ${key}=your_api_key_here`);
       });
       console.error('🔗 Get API keys from:');
       console.error('   - Unsplash: https://unsplash.com/developers');
@@ -49,8 +47,7 @@ export const getAPIStatus = () => {
     unsplash: !!process.env.NEXT_PUBLIC_API_UNSPLASH,
     pixabay: !!process.env.NEXT_PUBLIC_API_PIXABAY,
     pexels: !!process.env.NEXT_PUBLIC_API_PEXELS,
-    picsum: true, // Picsum doesn't require API key
-    gemini: !!(typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_GEMINI_API_KEY : process.env.GEMINI_API_KEY)
+    picsum: true // Picsum doesn't require API key
   };
 
   return {
@@ -67,8 +64,7 @@ export const validateAPIKeyFormat = (key, service) => {
   const patterns = {
     unsplash: /^[a-zA-Z0-9_-]{40,}$/,
     pixabay: /^[0-9]+-[a-zA-Z0-9]+$/,
-    pexels: /^[a-zA-Z0-9]{56}$/,
-    gemini: /^[A-Za-z0-9-_]+$/
+    pexels: /^[a-zA-Z0-9]{56}$/
   };
 
   const pattern = patterns[service];
