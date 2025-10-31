@@ -1,4 +1,4 @@
-import geminiAPI from '../../../backend/api/GeminiAPI';
+import geminiAPI from '@/backend/api/GeminiAPI';
 
 export async function POST(req) {
   try {

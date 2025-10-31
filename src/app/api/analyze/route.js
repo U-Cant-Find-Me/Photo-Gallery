@@ -1,4 +1,4 @@
-import geminiAPI from '../../../backend/api/GeminiAPI';
+import geminiAPI from '@/backend/api/GeminiAPI';
 import { AnalysisStorage } from '@/utils/analysisStorage';
 import crypto from 'crypto';
 

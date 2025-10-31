@@ -201,7 +201,7 @@ export const EditImagePanel = () => {
                         onChange={(e) => setEditPrompt(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Describe how you want to edit the image..."
-                        className="bg-slate-900/50 text-white border border-slate-700 rounded-lg p-3 pr-28 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                        className="bg-slate-900/50 border border-slate-700 rounded-lg p-3 pr-28 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
                         disabled={!uploadedImage || isLoading}
                     />
                     <button onClick={handleEdit} className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-2 px-4 rounded-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled={!uploadedImage || isLoading || !editPrompt.trim()}>
