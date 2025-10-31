@@ -2,7 +2,7 @@ import CenterPage from "@/components/CenterPage";
 import RenderImages from "@/components/RenderImages";
 import SecoundaryBar from "@/components/SecondaryBar";
 
-const bgurl = 'https://random-image-pepebigotes.vercel.app/api/random-image';
+const bgurl = 'https://picsum.photos/1440/900';
 
 export default function Home() {
   return (
